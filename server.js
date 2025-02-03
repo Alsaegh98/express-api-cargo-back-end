@@ -1,4 +1,6 @@
-const dotenv = require('dotenv');
+// const dotenv = require('dotenv');
+// dotenv.config();
+const dotenv = require('dotenv-safe');
 dotenv.config();
 const cors = require('cors');
 const express = require('express');
@@ -22,6 +24,23 @@ app.use('/test-jwt', testJWTRouter);
 app.use('/users', usersRouter);
 app.use('/profiles', profilesRouter);
 app.use('/cargos', cargosRouter);
+app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+        return res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+    next();
+});
+
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per window
+    message: 'Too many requests from this IP, please try again later.',
+});
+
+app.use('/cargos', limiter); // Apply rate limiting to cargos API
+
 
 app.listen(3000, () => {
     console.log('The express app is ready!');

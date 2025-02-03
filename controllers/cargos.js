@@ -44,21 +44,39 @@ router.get('/test-email', async (req, res) => {
     res.status(500).send('Error sending email');
   }
 });
-router.post('/', async (req, res) => {
-    try {
-        console.log('Received inquiry:', req.body); // Check incoming request data
-        
-        if (!req.body.email) {
-            return res.status(400).json({ error: 'Email is required' });
-        }
 
+
+// router.post('/', async (req, res) => {
+//     try {
+//         console.log('Received inquiry:', req.body); // Check incoming request data
+        
+//         if (!req.body.email) {
+//             return res.status(400).json({ error: 'Email is required' });
+//         }
+
+//         req.body.author = req.user._id;
+//         const cargo = await Cargo.create(req.body);
+//         cargo._doc.author = req.user;
+
+//         console.log(`Calling sendConfirmationEmail for: ${req.body.email}`);
+//         await sendConfirmationEmail(req.body.email);
+//         console.log('Email function executed successfully');
+
+//         res.status(201).json(cargo);
+//     } catch (error) {
+//         console.error('Error in creating inquiry:', error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// });
+
+router.post('/', verifyToken, async (req, res) => {  // <-- Now only authenticated users can post inquiries
+    try {
         req.body.author = req.user._id;
         const cargo = await Cargo.create(req.body);
         cargo._doc.author = req.user;
 
-        console.log(`Calling sendConfirmationEmail for: ${req.body.email}`);
+        console.log(`Sending confirmation email to: ${req.body.email}`);
         await sendConfirmationEmail(req.body.email);
-        console.log('Email function executed successfully');
 
         res.status(201).json(cargo);
     } catch (error) {
@@ -66,28 +84,6 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-
-// router.post('/', async (req, res) => {
-//     try {
-//       console.log('Received inquiry:', req.body); // Log the entire request body
-//       if (!req.body.email) {
-//         return res.status(400).json({ error: 'Email is required' });
-//       }
-
-//       req.body.author = req.user._id;
-//       const cargo = await Cargo.create(req.body);
-//       cargo._doc.author = req.user;
-
-//       console.log(`Sending confirmation email to: ${req.body.email}`);
-//       await sendConfirmationEmail(req.body.email);
-
-//       res.status(201).json(cargo);
-//     } catch (error) {
-//       console.error('Error in creating inquiry:', error);
-//       res.status(500).json({ error: 'Internal Server Error' });
-//     }
-// });
 
 
 router.get('/', async (req, res) => {
