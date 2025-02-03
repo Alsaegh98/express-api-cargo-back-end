@@ -85,17 +85,29 @@ router.post('/', verifyToken, async (req, res) => {  // <-- Now only authenticat
     }
 });
 
-
 router.get('/', async (req, res) => {
     try {
-      const cargos = await Cargo.find({})
-        .populate('author')
-        .sort({ createdAt: 'desc' });
-      res.status(200).json(cargos);
+        // Only return inquiries where the author matches the logged-in user
+        const cargos = await Cargo.find({ author: req.user._id }).sort({ createdAt: 'desc' });
+
+        res.status(200).json(cargos);
     } catch (error) {
-      res.status(500).json(error);
+        console.error('Error fetching inquiries:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+});
+
+
+// router.get('/', async (req, res) => {
+//     try {
+//       const cargos = await Cargo.find({})
+//         .populate('author')
+//         .sort({ createdAt: 'desc' });
+//       res.status(200).json(cargos);
+//     } catch (error) {
+//       res.status(500).json(error);
+//     }
+//   });
 
 router.get('/:cargoId', async (req, res) => {
     try {
